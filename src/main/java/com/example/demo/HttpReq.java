@@ -20,11 +20,12 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.common.settings.Settings;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.http.HttpEntity;
 
 public class HttpReq {
-	public static void main(String args[]) throws ClientProtocolException, IOException
-	{
+	//public static void main2(String args[]) throws ClientProtocolException, IOException
+	//{
 		/*CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpPut httpPut = new HttpPut("http://localhost:9200/company");
 		httpPut.setHeader("Accept", "application/json");
@@ -57,14 +58,17 @@ public class HttpReq {
 		CreateIndexResponse createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT);
 		System.out.println(createIndexResponse.toString());*/
 		
-		Map<String, Object> map = new HashMap<String,Object>();
+	/*	Map<String, Object> map = new HashMap<String,Object>();
 		map.put("1", "One");
 		map.put("2", Integer.valueOf("2"));
 		map.put("3", Long.valueOf("1717"));
 		
 		System.out.println("Map(1)="+map.get("1").getClass());
 		System.out.println("Map(2)="+map.get("2").getClass());
-		System.out.println("Map(3)="+map.get("3").getClass());
-	}
+		System.out.println("Map(3)="+map.get("3").getClass());*/
+	//}
+	
+
+
 
 }

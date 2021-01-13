@@ -24,6 +24,7 @@ public class Producer {
 
   public void sendDataToKafka(@RequestParam String data) {
 
+	  System.out.println("************************Sending Data to kafka"+data);
     ListenableFuture<SendResult<String, String>> listenableFuture = kafkaTemplate.send(topic, data);
 
     listenableFuture.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
