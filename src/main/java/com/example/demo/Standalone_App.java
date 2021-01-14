@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +21,9 @@ public class Standalone_App implements ApplicationRunner{
 	  @Value("${my.kafka.producer.numofmesages}")
 	  private String numOfMessagestoProcess;
 	  
-	 /* @Value("${my.kafka.producer.assetids}")
-	  private String assetIds;
-	  */
+	  @Value("${my.kafka.producer.timetokeeprunningmins}")
+	  private String timetokeeprunningmins;
+	  
 	  Random ran = new Random(); 
 	  StringBuilder sb_selector= new StringBuilder();
 	  StringBuilder sb_add = new StringBuilder();
@@ -36,20 +38,31 @@ public class Standalone_App implements ApplicationRunner{
       final String enrichmentProcessorPayload_part2 ="\",  \"asset_id_type\": \"SVC TAG ID\",  \"asset_identifier\": \"FQ4FNH2\",  \"asset_type\": \"SERVICETAG\",  \"bu_desc\": \"United States\",  \"city\": \"GRENOBLE\",  \"cntrct_stat_desc\": \"ACTIVE\",  \"cntrct_stat_id\": \"1\",  \"country\": \"United States\",  \"cust_buid\": \"11\",  \"cust_num\": \"1717\",  \"end_of_lease_flg\": \"Y\",  \"event_created_by\": \"ENRICHMENT-PROCESSOR\",  \"fmly\": \"BANDONFBTX\",  \"fmly_prnt\": \"BANDONBTX\",  \"highest_lvl_offer_code\": \"PS\",  \"incremental_flg\": \"Y\",  \"init_cntrct_code\": \"I\",  \"is_commercial\": true,  \"iso_ctry_code_2\": \"US\",  \"iso_ctry_code_3\": \"USA\",  \"itm_cls_code\": \"1I002\",  \"itm_cls_desc\": \"LAT 5300 2-IN-1,NBK,BANDON BTX\",  \"itm_num\": \"710-65683\",  \"lcl_chnl_code\": \"PREF\",  \"mfr_id\": \"1\",  \"mfr_num\": \"DELL\",  \"mfr_srl_num\": \"CN015DR51296379B04AB\",  \"operation\": \"ENRICHMENT\",  \"ord_src_type\": \"ORD\",  \"order_num\": \"080038493\",  \"postal_code\": \"38030 \",  \"prod_grp\": \"Commercial\",  \"prod_line\": \"LATITUDE 5300 2-IN-1\",  \"prod_lob\": \"Latitude\",  \"prod_type\": \"Client Solutions PBU\",  \"rgn_abbr\": \"AMER\",  \"rgn_desc\": \"AMERICAS\",  \"shipd_dts_gmt\": \"2020-07-01 00:00:00\",  \"src_ord_type_code\": \"FR REL Order\",  \"svc_lvl_code\": \"TS\",  \"svc_lvl_desc\": \"P, ProSupport\"}";
       final String enrichmentWarrantyLoaderPayload_part1 ="{  \"cntrct_end_dts_gmt\": \"2021-04-12 18:00:59\",  \"warranty_code\": \"PSP\",  \"asset_id\": \"";
       final String enrichmentWarrantyLoaderPayload_part2 = "\",  \"cntrct_strt_dts_gmt\": \"2018-04-11 19:00:00\",  \"warranty_desc\": \"ProSupport Plus\",  \"is_commercial\": true,  \"operation\": \"ENRICHMENT\",  \"event_created_by\": \"WARRANTY-LOADER\"}";
-     
+      int numOfMessageProcessed =0;
+	  int numOfAddProcessed =0;
+	  int numOfEnrichProcessorProcessed =0;
+	  int numOfWarrantyLoaderProcessed =0;
+	  int numOfEnrichProcessed =0;
       
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		// TODO Auto-generated method stub
 		int numberOfMessages = Integer.parseInt(numOfMessagestoProcess);
 		  int selector;
+		  long timeToRun = Integer.parseInt(timetokeeprunningmins)*60*1000;
+		  
+		  
 	      if( numberOfMessages<0)
 	      {
 	    	  int i=0;
-	    	  while(true)
+	    	  long t= System.currentTimeMillis();
+	    	  long end = t+timeToRun;
+	    	  
+	    	  while(System.currentTimeMillis() < end)
 	    	  {
 	    		  i=i+1;
-	    		  selector=ran.nextInt()%4;
+	    		  selector=Math.abs(ran.nextInt()%4);
+	    		  //System.out.println("S E LE C T OT R"+selector);
 	    		  generateMessageToKafka(i,selector);
 	    	  }
 	      }
@@ -60,29 +73,68 @@ public class Standalone_App implements ApplicationRunner{
 	    	  generateMessageToKafka(i,selector);
 	      }
 	      }
+	      
+	      System.out.println("numOfMessageProcessed="+numOfMessageProcessed);
+	      System.out.println("numOfAddProcessed="+numOfAddProcessed);
+	      System.out.println("numOfEnrichProcessorProcessed="+numOfEnrichProcessorProcessed);
+	      System.out.println("numOfWarrantyLoaderProcessed="+numOfWarrantyLoaderProcessed);
+	      System.out.println("numOfEnrichProcessed="+numOfEnrichProcessed);
+	      
+	      BufferedWriter writer = null;
+	      try {
+	      writer = new BufferedWriter(new FileWriter("SerilizerTestMsgGenStats_"+System.currentTimeMillis()+".log"));
 
+	      writer.write("numOfMessageProcessed="+numOfMessageProcessed+"\n");
+	      writer.write("numOfAddProcessed="+numOfAddProcessed+"\n");
+	      writer.write("numOfEnrichProcessorProcessed="+numOfEnrichProcessorProcessed+"\n");
+	      writer.write("numOfWarrantyLoaderProcessed="+numOfWarrantyLoaderProcessed+"\n");
+	      writer.write("numOfEnrichProcessed="+numOfEnrichProcessed+"\n");
+	      writer.close();
+	      }
+	      catch(Exception ex)
+	      {
+	    	  writer.close();  
+	      }
+	      
+	      System.exit(0);
 	}
 
 	private void generateMessageToKafka(int i, int selector) {
-		
+		//System.out.println("S E LE C T OT R"+selector);
 	 switch (selector)
   	  {
   	  case 0:{
+  		//System.out.println("0 0 0 0 0 0 ");
   		payloadSelector(addPayload_part1, addPayload_part2, i);
+  		numOfAddProcessed++;
+  		break;
   	      }
   	  case 1:{
+  		//System.out.println("1 1 1 1 1 1");
   		payloadSelector(enrichmentPayload_part1, enrichmentPayload_part2, i);
+  		numOfEnrichProcessed++;
+  		break;
   	  }
   	 case 2:{
+  		//System.out.println("2 2 2 2 2 2 2 ");
   		payloadSelector(enrichmentProcessorPayload_part1, enrichmentProcessorPayload_part2, i);
+  		numOfEnrichProcessorProcessed++;
+  		break;
   	  }
   	case 3:{
+  		//System.out.println("3 3 3 3 3 3 3 ");
   		payloadSelector(enrichmentWarrantyLoaderPayload_part1, enrichmentWarrantyLoaderPayload_part2, i);
-  	  }
+  		numOfWarrantyLoaderProcessed++;
+  		break;	
+  	}
   	default:{
+  		//System.out.println("D D D D D D D");
   		payloadSelector(addPayload_part1, addPayload_part2, i);
+  		numOfAddProcessed++;
+  		break;
+  	 }
   	  }
-  	  }
+	 numOfMessageProcessed++;
 		  System.out.println("data="+sb_selector.toString());
 		  myKafkaProducer.sendDataToKafka(sb_selector.toString());
 	}
