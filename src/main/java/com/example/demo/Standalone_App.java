@@ -24,6 +24,9 @@ public class Standalone_App implements ApplicationRunner{
 	  @Value("${my.kafka.producer.timetokeeprunningmins}")
 	  private String timetokeeprunningmins;
 	  
+	  @Value("${ my.kafka.app.mode}")
+	  private String mode;
+
 	  Random ran = new Random(); 
 	  StringBuilder sb_selector= new StringBuilder();
 	  StringBuilder sb_add = new StringBuilder();
@@ -47,6 +50,7 @@ public class Standalone_App implements ApplicationRunner{
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		// TODO Auto-generated method stub
+		if(mode.equals("performance")) {
 		int numberOfMessages = Integer.parseInt(numOfMessagestoProcess);
 		  int selector;
 		  long timeToRun = Integer.parseInt(timetokeeprunningmins)*60*1000;
@@ -95,7 +99,7 @@ public class Standalone_App implements ApplicationRunner{
 	      {
 	    	  writer.close();  
 	      }
-	      
+		}// if mode=performance.
 	      System.exit(0);
 	}
 
